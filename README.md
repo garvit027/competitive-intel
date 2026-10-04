@@ -1,127 +1,136 @@
 # Competitive Intelligence Platform
 
-A principal engineer-level AI agent platform for competitive intelligence, market research, and strategic monitoring. Built with **LangGraph**, **SerpApi**, and **serpapi-search-tools-python**.
+> **AI agents that plan, search, analyze, and report on your competitive landscape using live search data.**
 
-## Architecture Overview
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![SerpApi](https://img.shields.io/badge/powered%20by-SerpApi-orange)](https://serpapi.com)
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Competitive Intelligence Platform           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐       │
-│  │  Researcher  │──▶│   Analyst    │──▶│ Synthesizer  │       │
-│  │   Agent      │   │   Agent      │   │   Agent      │       │
-│  └──────────────┘   └──────────────┘   └──────────────┘       │
-│        │                  │                  │                  │
-│        ▼                  ▼                  ▼                  │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │              LangGraph Workflow Orchestration             │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│        │                  │                  │                  │
-│        ▼                  ▼                  ▼                  │
-│  ┌──────────────┐   ┌──────────────┐   ┌──────────────┐       │
-│  │  Web Search  │   │ News Search  │   │Shopping/Maps │       │
-│  │   (Google,   │   │  (Google     │   │  (Amazon,    │       │
-│  │   Bing, DDG) │   │   News)      │   │   eBay)      │       │
-│  └──────────────┘   └──────────────┘   └──────────────┘       │
-│        │                  │                  │                  │
-│        └──────────────────┼──────────────────┘                  │
-│                           ▼                                     │
-│              ┌────────────────────────┐                         │
-│              │     SerpApi MCP /      │                         │
-│              │  serpapi-search-tools  │                         │
-│              └────────────────────────┘                         │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+---
 
-## Features
+## What it does
 
-### Multi-Agent Intelligence Pipeline
-- **Researcher Agent**: Designs and executes comprehensive search strategies
-- **Analyst Agent**: Detects and classifies competitive signals with confidence scoring
-- **Synthesizer Agent**: Generates executive-ready reports with citations
-- **Monitor Agent**: Continuous monitoring with alerting
+Give it a topic and a list of companies. It returns a cited, executive-ready report on what they're doing — product launches, funding, M&A, partnerships, leadership changes, pricing shifts, layoffs, earnings, regulatory actions, patents, hiring surges, customer wins — with confidence scores and severity ratings.
 
-### Search Capabilities (via SerpApi)
-- **Web Search**: General research, background information
-- **News Search**: Real-time reporting, announcements, earnings
-- **Shopping Search**: Product listings, pricing, availability
-- **Maps Search**: Physical locations, offices, retail presence
-- **Images Search**: Visual references, product imagery
-- **Videos Search**: Demos, presentations, interviews
-- **Flights/Hotels/Travel**: Business travel intelligence
+A companion **Monitor Agent** runs continuous tracking with alerting so you never miss a move.
 
-### Production-Ready Infrastructure
-- **LangGraph Workflows**: Stateful, checkpointed, streaming execution
-- **Caching**: Disk-based with TTL, reduces API costs by 60-80%
-- **Rate Limiting**: Token bucket, respects SerpApi limits
-- **Observability**: Structured logging, Prometheus metrics, OpenTelemetry tracing
-- **Error Handling**: Exponential backoff retries, graceful degradation
-- **Human-in-the-Loop**: Optional review checkpoints
-
-### Output Formats
-- **Markdown**: Human-readable, version-controllable
-- **HTML**: Styled reports for sharing
-- **PDF**: Professional documents via WeasyPrint
-- **JSON**: Structured data for downstream systems
+---
 
 ## Quick Start
 
-### Prerequisites
-- Python 3.11+
-- SerpApi API key (free tier: 250 searches/month)
-- OpenAI API key (or compatible provider)
-
-### Installation
-
 ```bash
-# Clone and install
-git clone <repo>
-cd competitive_intel
-pip install -e ".[dev]"
+# 1. Clone & install
+git clone https://github.com/garvit027/competitive-intel.git
+cd competitive-intel
+./scripts/setup.sh
 
-# Or install minimal
-pip install competitive-intel
+# 2. Add API keys to .env (created by setup.sh)
+# SERPAPI_API_KEY — free 250 searches/month at https://serpapi.com/manage-api-key
+# OPENAI_API_KEY  — or compatible provider
+
+# 3. Run a research task
+uv run competitive-intel research "AI Foundation Models" \
+  --entity "OpenAI,Anthropic,Google DeepMind,Meta AI" \
+  --entity-type "company,company,company,company" \
+  --signal "product_launch,funding,partnership,pricing_change" \
+  --depth standard --format markdown
+
+# 4. Or start continuous monitoring
+uv run competitive-intel monitor "AI Infrastructure" \
+  --entity "NVIDIA,AMD,Intel,CoreWeave,Lambda Labs" \
+  --interval 60 --threshold medium
 ```
 
-### Configuration
+---
 
+## Example Output
+
+```
+--- Research Summary ---
+Title: Competitive Intelligence: AI Foundation Models
+Confidence Score: 0.87
+Signals Detected: 23
+Entities: 4
+Citations: 47
+Sections: 6
+
+--- Top Signals ---
+[CRITICAL] Anthropic raises $4B from Amazon at $18.4B valuation
+    Type: funding | Confidence: high
+[HIGH] OpenAI launches GPT-4o with real-time voice
+    Type: product_launch | Confidence: high
+[MEDIUM] Google DeepMind merges with Google Brain
+    Type: acquisition | Confidence: medium
+```
+
+Reports include: executive summary, detailed sections by theme, signal tables, entity profiles, and full citation bibliography.
+
+---
+
+## Features
+
+| Capability | Details |
+|------------|---------|
+| **9 Search Engines** | Web, News, Shopping, Maps, Images, Videos, Flights, Hotels, Travel Explore |
+| **15 Signal Types** | product_launch, funding, acquisition, partnership, leadership_change, pricing_change, market_expansion, regulatory_action, patent_filing, hiring_surge, layoffs, technology_adoption, customer_win, security_incident, earnings_report |
+| **Output Formats** | Markdown, HTML, PDF (WeasyPrint), JSON |
+| **Observability** | Structured logging, Prometheus metrics, OpenTelemetry tracing |
+| **Caching** | Disk-based with TTL (60–80% hit rate on recurring monitoring) |
+| **Rate Limiting** | Token bucket, respects SerpApi limits |
+| **Human-in-the-Loop** | Optional review checkpoints in workflow |
+
+---
+
+## Architecture
+
+```
+┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
+│   Researcher    │──▶│    Analyst      │──▶│  Synthesizer    │
+│   (plans)       │   │   (detects)     │   │   (reports)     │
+└─────────────────┘   └─────────────────┘   └─────────────────┘
+         │                   │                   │
+         ▼                   ▼                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    LangGraph Workflow                       │
+│  (stateful, checkpointed, streamable, human-review ready)  │
+└─────────────────────────────────────────────────────────────┘
+         │                   │                   │
+         ▼                   ▼                   ▼
+┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
+│   Web Search    │   │  News Search    │   │ Shopping/Maps/  │
+│  (Google, Bing, │   │  (Google News)  │   │  Videos/Flights │
+│   DuckDuckGo)   │   │                 │   │  /Hotels/etc.   │
+└─────────────────┘   └─────────────────┘   └─────────────────┘
+```
+
+---
+
+## CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `competitive-intel research <topic>` | Run a one-off research task |
+| `competitive-intel monitor <topic>` | Start continuous monitoring |
+| `competitive-intel brief <topic> -o file.json` | Generate a brief template |
+| `competitive-intel validate <file.json>` | Validate a brief file |
+| `competitive-intel demo` | Run a quick demo with sample data |
+| `competitive-intel version` | Show version |
+
+### Research Options
 ```bash
-cp .env.example .env
-# Edit .env with your API keys
+--entity, -e         Comma-separated entity names
+--entity-type, -t    Comma-separated types (company, product, person, technology, market)
+--signal, -s         Comma-separated signal types (default: all)
+--time-range         past_day, past_week, past_month, past_year
+--depth              quick, standard, deep
+--format             markdown, html, pdf, json
+--output, -o         Output file path
+--human-review       Enable human review checkpoint
 ```
 
-Required environment variables:
-```env
-SERPAPI_API_KEY=your_serpapi_key
-OPENAI_API_KEY=your_openai_key
-```
+---
 
-### Basic Usage
-
-```bash
-# Run a research task
-competitive-intel research "AI Foundation Model Competitive Landscape" \
-  --entity "OpenAI,Anthropic,Google DeepMind" \
-  --entity-type "company,company,company" \
-  --signal "product_launch,funding,partnership" \
-  --time-range "past_month" \
-  --depth "standard" \
-  --format "markdown"
-
-# Continuous monitoring
-competitive-intel monitor "AI Infrastructure Companies" \
-  --entity "NVIDIA,AMD,Intel" \
-  --interval 60 \
-  --threshold medium
-
-# Quick demo
-competitive-intel demo
-```
-
-### Programmatic Usage
+## Programmatic Usage
 
 ```python
 import asyncio
@@ -134,13 +143,17 @@ from competitive_intel.models import Entity, EntityType, ResearchBrief, SignalTy
 
 async def main():
     brief = ResearchBrief(
-        topic="Competitive Analysis: Cloud AI Platforms",
+        topic="Cloud AI Platforms Competitive Analysis",
         entities=[
             Entity(name="AWS", type=EntityType.COMPANY),
             Entity(name="Google Cloud", type=EntityType.COMPANY),
             Entity(name="Azure", type=EntityType.COMPANY),
         ],
-        signal_types=[SignalType.PRODUCT_LAUNCH, SignalType.PARTNERSHIP, SignalType.PRICING_CHANGE],
+        signal_types=[
+            SignalType.PRODUCT_LAUNCH,
+            SignalType.PARTNERSHIP,
+            SignalType.PRICING_CHANGE,
+        ],
         time_range="past_month",
         depth="standard",
     )
@@ -154,157 +167,104 @@ async def main():
 asyncio.run(main())
 ```
 
-## Advanced Usage
+---
 
-### Custom Agents
+## Docker Deployment
 
-```python
-from competitive_intel.agents import StructuredOutputAgent, AgentConfig
-from pydantic import BaseModel
+```bash
+# Build
+docker build -t competitive-intel .
 
-class CustomSignal(BaseModel):
-    finding: str
-    impact: str
-
-class CustomBatch(BaseModel):
-    signals: list[CustomSignal]
-
-class MyCustomAgent(StructuredOutputAgent):
-    def __init__(self):
-        super().__init__(
-            AgentConfig(name="custom", description="...", system_prompt="..."),
-            CustomBatch,
-        )
+# Or run full observability stack (Grafana, Tempo, Prometheus, Redis, PostgreSQL)
+docker-compose up -d
 ```
 
-### Monitoring with Alerts
-
-```python
-from competitive_intel.workflows import MonitoringWorkflowConfig, create_monitoring_workflow
-
-config = MonitoringWorkflowConfig(
-    interval_seconds=300,  # 5 minutes
-    alert_threshold="high",
-    alert_on_new_signals=True,
-)
-
-workflow = create_monitoring_workflow(brief, config=config)
-await workflow.start_continuous()
-```
-
-### Financial Intelligence Extension
-
-See `examples/advanced_custom_agents.py` for a financial analyst agent that extracts structured revenue, ARR, and valuation data.
+---
 
 ## Project Structure
 
 ```
 competitive_intel/
 ├── src/competitive_intel/
-│   ├── agents/           # Agent implementations
-│   │   ├── base.py       # Base agent classes
-│   │   ├── researcher.py # Research planning & execution
-│   │   ├── analyst.py    # Signal detection & analysis
-│   │   ├── synthesizer.py# Report generation
-│   │   └── monitor.py    # Continuous monitoring
-│   ├── workflows/        # LangGraph workflows
-│   │   ├── research_workflow.py
-│   │   └── monitoring_workflow.py
-│   ├── tools/            # Search tool integrations
-│   │   ├── serpapi_tools.py   # Core SerpApi wrapper
-│   │   └── search_tools.py    # LangGraph-compatible tools
-│   ├── models/           # Pydantic domain models
-│   ├── reports/          # Report generation & export
-│   ├── config/           # Settings management
-│   └── utils/            # Observability, caching, helpers
-├── examples/             # Usage examples
-├── tests/                # Unit & integration tests
-└── scripts/              # Utility scripts
+│   ├── agents/          # Researcher, Analyst, Synthesizer, Monitor
+│   ├── workflows/       # LangGraph workflows (research + monitoring)
+│   ├── tools/           # SerpApi integration (caching, rate limits, retries)
+│   ├── models/          # 20+ Pydantic domain models
+│   ├── reports/         # Markdown/HTML/PDF/JSON export
+│   ├── config/          # Pydantic Settings
+│   └── utils/           # Observability, caching, helpers
+├── examples/            # basic_research.py, continuous_monitoring.py, advanced_custom_agents.py
+├── tests/               # Unit + integration tests
+└── scripts/             # setup.sh, run.sh
 ```
 
-## Configuration Options
+---
 
-Key settings in `.env`:
+## Configuration
+
+All settings via environment variables (prefix `CI_`):
 
 ```env
+# Required
+CI_SERPAPI_API_KEY=your_key
+CI_LLM_API_KEY=your_key
+
 # LLM
-LLM_PROVIDER=openai
-LLM_MODEL=gpt-4o-mini
-LLM_TEMPERATURE=0.1
+CI_LLM_PROVIDER=openai
+CI_LLM_MODEL=gpt-4o-mini
 
 # SerpApi
-SERPAPI_API_KEY=your_key
-SERPAPI_RATE_LIMIT_RPM=100
+CI_SERPAPI_RATE_LIMIT_RPM=100
 
 # Cache
-CACHE_ENABLED=true
-CACHE_TTL_SECONDS=3600
-CACHE_MAX_SIZE_MB=500
+CI_CACHE_ENABLED=true
+CI_CACHE_TTL_SECONDS=3600
 
 # Observability
-OBS_ENABLED=true
-OBS_LOG_LEVEL=INFO
-OBS_OTLP_ENDPOINT=http://localhost:4317  # Optional
-
-# Agent
-AGENT_MAX_ITERATIONS=10
-AGENT_MAX_SEARCH_RESULTS=10
-AGENT_PARALLEL_SEARCHES=3
+CI_OBS_ENABLED=true
+CI_OBS_LOG_LEVEL=INFO
+CI_OBS_OTLP_ENDPOINT=http://otel:4317
 ```
 
-## Signal Taxonomy
+See [`.env.example`](.env.example) for all options.
 
-The platform detects 15+ signal types:
+---
 
-| Signal Type | Description | Typical Sources |
-|-------------|-------------|-----------------|
-| `product_launch` | New products, features, releases | Press releases, blogs, news |
-| `funding` | VC rounds, investments, IPOs | SEC filings, TechCrunch, Crunchbase |
-| `acquisition` | M&A, acqui-hires | Press releases, regulatory filings |
-| `partnership` | Strategic alliances, integrations | Joint announcements, blog posts |
-| `leadership_change` | C-suite, board, key hires | Press releases, LinkedIn, news |
-| `pricing_change` | Price updates, new tiers | Pricing pages, blogs, emails |
-| `market_expansion` | Geographic, vertical expansion | Press releases, job postings |
-| `regulatory_action` | SEC, antitrust, compliance | Government filings, news |
-| `patent_filing` | IP activity | USPTO, Google Patents |
-| `hiring_surge` | Mass hiring, key roles | Job boards, LinkedIn, news |
-| `layoffs` | Workforce reductions | WARN notices, news, employee posts |
-| `customer_win` | Major customer announcements | Case studies, press releases |
-| `earnings_report` | Quarterly results, guidance | SEC filings, investor relations |
+## Extending
 
-## Performance & Cost Optimization
+### Add a Custom Agent
+```python
+from competitive_intel.agents import StructuredOutputAgent, AgentConfig
+from pydantic import BaseModel
 
-- **Caching**: 60-80% cache hit rate typical for recurring monitoring
-- **Compact Mode**: Default Markdown responses use ~50% fewer tokens
-- **Parallel Searches**: Configurable concurrency (default 3)
-- **Result Limits**: Per-tool limits prevent context overflow
-- **Free Tier Friendly**: 250 searches/month covers ~10-20 research runs
+class MySignal(BaseModel): ...
+
+class MyAgent(StructuredOutputAgent):
+    def __init__(self):
+        super().__init__(AgentConfig(...), MySignal)
+```
+
+### Add a Signal Type
+1. Add to `SignalType` enum in `models/__init__.py`
+2. Add detection keywords in `agents/analyst.py`
+3. Add tests
+
+---
 
 ## Testing
 
 ```bash
-# Unit tests
-pytest tests/unit -v
-
-# Integration tests (requires API keys)
-SERPAPI_API_KEY=xxx OPENAI_API_KEY=xxx pytest tests/integration -v
-
-# With coverage
-pytest tests/unit --cov=competitive_intel --cov-report=html
+make test              # Unit tests (64 passing)
+make test-integration  # Requires SERPAPI_API_KEY + OPENAI_API_KEY
 ```
 
-## Contributing
-
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Install dev dependencies: `pip install -e ".[dev]"`
-4. Make changes with tests
-5. Run linting: `ruff check . && mypy src/`
-6. Submit PR
+---
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT — see [LICENSE](LICENSE)
+
+---
 
 ## Acknowledgments
 
