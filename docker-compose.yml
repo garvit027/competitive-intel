@@ -1,0 +1,151 @@
+version: '3.8'
+
+services:
+  competitive-intel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: competitive-intel
+    environment:
+      - SERPAPI_API_KEY=${SERPAPI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      - ENVIRONMENT=production
+      - OBS_ENABLED=true
+      - OBS_LOG_FORMAT=json
+      - OBS_OTLP_ENDPOINT=http://otel-collector:4317
+      - CACHE_BACKEND=redis
+      - CACHE_REDIS_URL=redis://redis:6379/0
+      - DB_URL=postgresql://postgres:postgres@postgres:5432/competitive_intel
+    volumes:
+      - ./reports:/app/reports
+      - ./data:/app/data
+      - ./.cache:/app/.cache
+    ports:
+      - "8000:8000"  # For metrics/health if needed
+    depends_on:
+      - redis
+      - postgres
+      - otel-collector
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: competitive-intel-redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+  # PostgreSQL for persistence
+  postgres:
+    image: postgres:16-alpine
+    container_name: competitive-intel-postgres
+    environment:
+      - POSTGRES_DB=competitive_intel
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+  # OpenTelemetry Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: competitive-intel-otel
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8888:8888"   # Prometheus metrics
+      - "13133:13133" # Health check
+    depends_on:
+      - tempo
+      - prometheus
+    restart: unless-stopped
+
+  # Grafana Tempo for traces
+  tempo:
+    image: grafana/tempo:latest
+    container_name: competitive-intel-tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+      - tempo_data:/tmp/tempo
+    ports:
+      - "3200:3200"   # Tempo HTTP
+      - "9095:9095"   # Tempo gRPC
+    restart: unless-stopped
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: competitive-intel-prometheus
+    command:
+      - '--config.file=/etc/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: competitive-intel-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - tempo
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:
+  tempo_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  default:
+    name: competitive-intel-network

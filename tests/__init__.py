@@ -1,0 +1,1 @@
+"""Test suite for Competitive Intelligence Platform."""

@@ -1,0 +1,80 @@
+# Dependabot Configuration for Automated Dependency Updates
+version: 2
+updates:
+  # Python dependencies (pyproject.toml)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "[deps]"
+      prefix-development: "[deps-dev]"
+    groups:
+      langchain:
+        patterns:
+          - "langchain*"
+          - "langgraph*"
+        update-types:
+          - "minor"
+          - "patch"
+      serpapi:
+        patterns:
+          - "serpapi*"
+        update-types:
+          - "minor"
+          - "patch"
+      observability:
+        patterns:
+          - "opentelemetry*"
+          - "prometheus*"
+          - "structlog*"
+        update-types:
+          - "minor"
+          - "patch"
+      testing:
+        patterns:
+          - "pytest*"
+          - "faker*"
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 10
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "[deps]"
+    open-pull-requests-limit: 5
+
+  # Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "[deps-docker]"
+    open-pull-requests-limit: 3
