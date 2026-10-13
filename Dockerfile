@@ -2,7 +2,7 @@
 # Multi-stage build for production
 
 # Build stage
-FROM python:3.12-slim as builder
+FROM python:3.14-slim as builder
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ RUN uv pip install --no-deps -e .
 
 
 # Runtime stage
-FROM python:3.12-slim as runtime
+FROM python:3.14-slim as runtime
 
 WORKDIR /app
 
