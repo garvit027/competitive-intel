@@ -69,7 +69,7 @@ jobs:
         run: uv run pytest tests/unit -v --tb=short --cov=competitive_intel --cov-report=xml
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
           files: ./coverage.xml
           fail_ci_if_error: false
